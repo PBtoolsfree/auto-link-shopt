@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PB Hero Bot - Control Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #060913;
+            --panel-bg: rgba(13, 20, 38, 0.55);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary-accent: #6366f1;
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --success-color: #10b981;
+            --error-color: #f43f5e;
+            --warning-color: #f59e0b;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --shadow-glow: 0 8px 32px 0 rgba(99, 102, 241, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: all 0.25s ease;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(168, 85, 247, 0.08) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(6, 9, 19, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.6);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 8%;
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(6, 9, 19, 0.8);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .logo-text h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-text p {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.stopped {
+            background-color: var(--text-muted);
+            box-shadow: 0 0 8px var(--text-muted);
+        }
+
+        .status-dot.running {
+            background-color: var(--success-color);
+            box-shadow: 0 0 12px var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+
+        main {
+            flex: 1;
+            padding: 40px 8%;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 32px;
+        }
+
+        @media (max-width: 1024px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .glass-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(99, 102, 241, 0.2);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            background: rgba(99, 102, 241, 0.03);
+            border-color: rgba(99, 102, 241, 0.15);
+        }
+
+        .stat-val {
+            font-size: 28px;
+            font-weight: 700;
+            margin-top: 4px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .controls-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .btn {
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px 0 rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: #060913;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(244, 63, 94, 0.3);
+        }
+
+        /* Config Form Tabs */
+        .tabs-header {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-accent);
+            border-bottom-color: var(--primary-accent);
+            font-weight: 600;
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--text-main);
+        }
+
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Form Inputs */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            background: rgba(6, 9, 19, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.15);
+        }
+
+        .form-note {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* Console Terminal */
+        .console-container {
+            display: flex;
+            flex-direction: column;
+            height: 380px;
+            background: #03050a;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            font-family: 'Fira Code', monospace;
+            box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.8);
+        }
+
+        .console-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .console-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .console-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .console-dot.r { background-color: var(--error-color); }
+        .console-dot.y { background-color: var(--warning-color); }
+        .console-dot.g { background-color: var(--success-color); }
+
+        .console-logs {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            font-size: 11px;
+            line-height: 1.6;
+            color: #d1d5db;
+        }
+
+        .log-entry {
+            margin-bottom: 6px;
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+
+        .log-entry.info { color: #818cf8; }
+        .log-entry.error { color: #f87171; }
+        .log-entry.warn { color: #fbbf24; }
+        .log-entry.success { color: #34d399; }
+
+        /* Toast Alert */
+        .alert {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success-color);
+            color: var(--text-main);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            z-index: 1000;
+        }
+
+        .alert.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .alert-error {
+            background: rgba(244, 63, 94, 0.1);
+            border-color: var(--error-color);
+        }
+
+        footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-muted);
+            font-size: 12px;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Notification Alerts -->
+    <div id="toast" class="alert">
+        <span id="toast-icon">✓</span>
+        <span id="toast-msg">Settings saved successfully!</span>
+    </div>
+
+    <!-- Header Panel -->
+    <header>
+        <div class="logo-container">
+            <div class="logo-icon">🚀</div>
+            <div class="logo-text">
+                <h1>PB Hero Bot</h1>
+                <p>GPLinks Deal Forwarding System</p>
+            </div>
+        </div>
+        <div class="status-badge">
+            <span id="header-status-dot" class="status-dot stopped"></span>
+            <span id="header-status-text">Stopped</span>
+        </div>
+    </header>
+
+    <!-- Main Container Grid -->
+    <main>
+        <!-- Config Section (Left Card) -->
+        <section class="glass-card">
+            <div class="controls-header">
+                <h2>Configuration Settings</h2>
+                <button type="button" class="btn btn-primary" onclick="saveConfig()">Save Settings</button>
+            </div>
+
+            <!-- Custom Category Tabs -->
+            <div class="tabs-header">
+                <button type="button" class="tab-btn active" onclick="switchTab('tab-tg-bot')">Telegram Settings</button>
+                <button type="button" class="tab-btn" onclick="switchTab('tab-discord')">Discord Settings</button>
+                <button type="button" class="tab-btn" onclick="switchTab('tab-gplinks')">GPLinks API</button>
+                <button type="button" class="tab-btn" onclick="switchTab('tab-security')">Console Security</button>
+            </div>
+
+            <!-- Config Fields Form -->
+            <form id="config-form">
+                <!-- Tab: Telegram Bot Configuration -->
+                <div id="tab-tg-bot" class="tab-pane active">
+                    <div class="form-group">
+                        <label for="TELEGRAM_BOT_TOKEN">Telegram Bot Token</label>
+                        <input type="password" id="TELEGRAM_BOT_TOKEN" placeholder="e.g. 1234567890:ABCdefGhIJKlmNoPQRsTUVwxyZ">
+                        <div class="form-note">Bot token generated by @BotFather. This bot reads posts and forwards deals.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="TELEGRAM_SOURCE_CHANNEL">Private Source Channel Username / ID</label>
+                        <input type="text" id="TELEGRAM_SOURCE_CHANNEL" placeholder="e.g. -1001234567890 or @my_source_channel">
+                        <div class="form-note">Where you post links or images to be shortened. The bot <b>must</b> be added here as an administrator!</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="TELEGRAM_DEST_CHANNEL">Destination Public Channel Username / ID</label>
+                        <input type="text" id="TELEGRAM_DEST_CHANNEL" placeholder="e.g. -1009876543210 or @my_public_deals">
+                        <div class="form-note">Where final shortened deals are posted. The bot <b>must</b> be an admin here too!</div>
+                    </div>
+                </div>
+
+                <!-- Tab: Discord Webhook & Bot Settings -->
+                <div id="tab-discord" class="tab-pane">
+                    <div class="form-group">
+                        <label for="DISCORD_MODE">Discord Integration Mode</label>
+                        <select id="DISCORD_MODE" onchange="toggleDiscordFields()">
+                            <option value="webhook">Discord Webhook Mode (Single Server Hook)</option>
+                            <option value="bot">Discord Bot Mode (Direct Multi-Channel broadcast)</option>
+                        </select>
+                        <div class="form-note">Select how you want to forward deals to Discord.</div>
+                    </div>
+
+                    <div id="discord-webhook-fields" class="form-group">
+                        <label for="DISCORD_WEBHOOK_URL">Discord Webhook URL</label>
+                        <input type="text" id="DISCORD_WEBHOOK_URL" placeholder="https://discord.com/api/webhooks/...">
+                        <div class="form-note">Your Discord server webhook URL. Leave blank to disable Webhook forwarding.</div>
+                    </div>
+
+                    <div id="discord-bot-fields" class="form-group" style="display:none;">
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label for="DISCORD_BOT_TOKEN">Discord Bot Token</label>
+                            <input type="password" id="DISCORD_BOT_TOKEN" placeholder="MTI5... your Discord Bot Token here">
+                            <div class="form-note">Your Discord application bot token. Ensure the bot is added to your target server channels.</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="DISCORD_CHANNEL_IDS">Discord Channel IDs (Comma-separated)</label>
+                            <input type="text" id="DISCORD_CHANNEL_IDS" placeholder="e.g. 1205164287352377402, 1109432876352988102">
+                            <div class="form-note">Target text channel IDs where the Discord Bot has permissions to post.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: GPLinks Developers API Key -->
+                <div id="tab-gplinks" class="tab-pane">
+                    <div class="form-group">
+                        <label for="GPLINKS_API_TOKEN">GPLinks API Developers Key</label>
+                        <input type="password" id="GPLINKS_API_TOKEN" placeholder="Paste your Developers API Key from gplinks.com">
+                        <div class="form-note">Your secure GET developers token. Found on gplinks.com/member/tools/api.</div>
+                    </div>
+                </div>
+
+                <!-- Tab: Security & Logout settings -->
+                <div id="tab-security" class="tab-pane">
+                    <div class="form-group">
+                        <label for="DASHBOARD_PASSWORD">Dashboard Password</label>
+                        <input type="text" id="DASHBOARD_PASSWORD" placeholder="Your Dashboard Access Password">
+                        <div class="form-note">Access password for this control console dashboard. Keep it safe and secure.</div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 32px; border-top: 1px solid var(--border-color); padding-top: 24px;">
+                        <button type="button" class="btn btn-danger" style="padding: 10px 20px; font-size: 13px;" onclick="logoutSession()">➔ Log Out of Console</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- Bot Operational Controls Section (Right Columns) -->
+        <section style="display: flex; flex-direction: column; gap: 32px;">
+            <!-- Stats & Start/Stop -->
+            <div class="glass-card">
+                <div class="controls-header">
+                    <h2>Bot Controller</h2>
+                </div>
+
+                <!-- Active Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Deals Caught</div>
+                        <div id="stat-processed" class="stat-val">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">TG Sent</div>
+                        <div id="stat-tg" class="stat-val">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Discord Sent</div>
+                        <div id="stat-discord" class="stat-val">0</div>
+                    </div>
+                </div>
+
+                <!-- Run Control Toggles -->
+                <div style="display:flex; gap:16px;">
+                    <button id="btn-start" type="button" class="btn btn-success" style="flex:1;" onclick="toggleBot('start')">▶ Start Bot</button>
+                    <button id="btn-stop" type="button" class="btn btn-danger" style="flex:1;" onclick="toggleBot('stop')">■ Stop Bot</button>
+                </div>
+            </div>
+
+            <!-- Terminal Live Logs Viewer -->
+            <div class="glass-card" style="padding: 24px;">
+                <div class="controls-header" style="margin-bottom: 16px;">
+                    <h2 style="font-size:16px;">Live System Logs</h2>
+                    <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 11px; border-radius: 8px;" onclick="clearLogs()">Clear Screen</button>
+                </div>
+
+                <div class="console-container">
+                    <div class="console-header">
+                        <div class="console-dots">
+                            <span class="console-dot r"></span>
+                            <span class="console-dot y"></span>
+                            <span class="console-dot g"></span>
+                        </div>
+                        <div>gplinks_bot.log</div>
+                    </div>
+                    <div id="console-logs" class="console-logs">
+                        <div class="log-entry info">System Dashboard Ready. Waiting for connection...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        &copy; 2026 PB Hero Bot Control Systems. All Rights Reserved.
+    </footer>
+
+    <script>
+        // Tab switching logic
+        function switchTab(tabId) {
+            document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.remove("active"));
+            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            
+            document.getElementById(tabId).classList.add("active");
+            
+            // Highlight matching tab button
+            const activeIndex = ["tab-tg-bot", "tab-discord", "tab-gplinks", "tab-security"].indexOf(tabId);
+            if (activeIndex !== -1) {
+                document.querySelectorAll(".tab-btn")[activeIndex].classList.add("active");
+            }
+        }
+
+        // Toggle Discord input views
+        function toggleDiscordFields() {
+            const mode = document.getElementById("DISCORD_MODE").value;
+            const webhookFields = document.getElementById("discord-webhook-fields");
+            const botFields = document.getElementById("discord-bot-fields");
+
+            if (mode === "bot") {
+                webhookFields.style.display = "none";
+                botFields.style.display = "block";
+            } else {
+                webhookFields.style.display = "block";
+                botFields.style.display = "none";
+            }
+        }
+
+        // Display beautiful alerts
+        function showToast(message, isError = false) {
+            const toast = document.getElementById("toast");
+            const icon = document.getElementById("toast-icon");
+            const msg = document.getElementById("toast-msg");
+
+            if (isError) {
+                toast.classList.add("alert-error");
+                icon.innerText = "✗";
+            } else {
+                toast.classList.remove("alert-error");
+                icon.innerText = "✓";
+            }
+
+            msg.innerText = message;
+            toast.classList.add("active");
+
+            setTimeout(() => {
+                toast.classList.remove("active");
+            }, 3000);
+        }
+
+        // Fetch configurations from env
+        async function fetchConfig() {
+            try {
+                const res = await fetch("/api/config");
+                if (res.ok) {
+                    const data = await res.json();
+                    
+                    // Set input fields
+                    for (const key in data) {
+                        const input = document.getElementById(key);
+                        if (input) {
+                            input.value = data[key];
+                        }
+                    }
+                    toggleDiscordFields();
+                } else if (res.status === 401) {
+                    window.location.reload();
+                }
+            } catch (err) {
+                showToast("Failed to fetch configurations from server.", true);
+            }
+        }
+
+        // Save Configurations
+        async function saveConfig() {
+            const form = document.getElementById("config-form");
+            const payload = {};
+            
+            // Build key value pairs from inputs
+            form.querySelectorAll("input, select, textarea").forEach(el => {
+                if (el.id) {
+                    payload[el.id] = el.value.trim ? el.value.trim() : el.value;
+                }
+            });
+
+            try {
+                const res = await fetch("/api/config", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    showToast("Configurations saved and bot hot-reloaded successfully!");
+                    fetchConfig();
+                } else {
+                    const errorData = await res.json();
+                    showToast(errorData.detail || "Failed to update configs.", true);
+                }
+            } catch (err) {
+                showToast("Network error while saving settings.", true);
+            }
+        }
+
+        // Clear screen logs
+        function clearLogs() {
+            document.getElementById("console-logs").innerHTML = '<div class="log-entry info">Screen cleared by operator.</div>';
+        }
+
+        // Toggle Bot operations
+        async function toggleBot(action) {
+            try {
+                const res = await fetch(`/api/bot/${action}`, { method: "POST" });
+                if (res.ok) {
+                    const data = await res.json();
+                    showToast(data.message);
+                    updateBotStatus();
+                } else {
+                    const errorData = await res.json();
+                    showToast(errorData.detail || `Failed to ${action} bot.`, true);
+                }
+            } catch (err) {
+                showToast("Network error while trying to control poller daemon.", true);
+            }
+        }
+
+        // Fetch logs stream
+        async function updateLogs() {
+            try {
+                const res = await fetch("/api/logs?lines=60");
+                if (res.ok) {
+                    const logData = await res.json();
+                    const consoleLogs = document.getElementById("console-logs");
+                    
+                    let htmlContent = "";
+                    logData.forEach(line => {
+                        let type = "info";
+                        if (line.includes("[ERROR]")) type = "error";
+                        else if (line.includes("[WARNING]")) type = "warn";
+                        else if (line.includes("successfully") || line.includes("Success")) type = "success";
+
+                        htmlContent += `<div class="log-entry ${type}">${escapeHtml(line)}</div>`;
+                    });
+
+                    consoleLogs.innerHTML = htmlContent;
+                    consoleLogs.scrollTop = consoleLogs.scrollHeight; // Auto scroll to bottom
+                }
+            } catch (err) {
+                // Ignore logs polling issues
+            }
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Update Operational Status badging
+        async function updateBotStatus() {
+            try {
+                const res = await fetch("/api/bot/status");
+                if (res.ok) {
+                    const data = await res.json();
+                    const dot = document.getElementById("header-status-dot");
+                    const text = document.getElementById("header-status-text");
+
+                    dot.className = "status-dot " + data.status;
+                    text.innerText = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+
+                    // Update controller buttons UI state
+                    const startBtn = document.getElementById("btn-start");
+                    const stopBtn = document.getElementById("btn-stop");
+                    
+                    if (data.status === "running") {
+                        startBtn.disabled = true;
+                        startBtn.style.opacity = "0.5";
+                        stopBtn.disabled = false;
+                        stopBtn.style.opacity = "1";
+                    } else {
+                        startBtn.disabled = false;
+                        startBtn.style.opacity = "1";
+                        stopBtn.disabled = true;
+                        stopBtn.style.opacity = "0.5";
+                    }
+
+                    // Update Metrics Counter Values
+                    document.getElementById("stat-processed").innerText = data.stats.processed;
+                    document.getElementById("stat-tg").innerText = data.stats.telegram_success;
+                    document.getElementById("stat-discord").innerText = data.stats.discord_success;
+                }
+            } catch (err) {
+                // Ignore status updates network issues
+            }
+        }
+
+        // Log out admin session
+        async function logoutSession() {
+            try {
+                const res = await fetch("/api/logout", { method: "POST" });
+                if (res.ok) {
+                    window.location.reload();
+                }
+            } catch (err) {
+                showToast("Network error trying to terminate admin session.", true);
+            }
+        }
+
+        // Initial launch loaders
+        fetchConfig();
+        updateBotStatus();
+        updateLogs();
+
+        // 3-seconds runtime heartbeat updates poller
+        setInterval(() => {
+            updateBotStatus();
+            updateLogs();
+        }, 3000);
+    </script>
+</body>
+</html>
