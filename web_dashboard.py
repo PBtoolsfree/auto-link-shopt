@@ -181,4 +181,10 @@ async def stream_gplinks_bot_logs(request: Request, lines: int = 50):
 # =========================================================================
 if __name__ == '__main__':
     logger.info("Initializing GPLinks bot control systems...")
-    uvicorn.run("web_dashboard:app", host="0.0.0.0", port=8000, reload=True)
+    # Dynamically resolve port from environment variables (useful for Pterodactyl, Heroku, etc.)
+    port_env = os.getenv("PORT") or os.getenv("SERVER_PORT") or "8000"
+    try:
+        bind_port = int(port_env)
+    except ValueError:
+        bind_port = 8000
+    uvicorn.run("web_dashboard:app", host="0.0.0.0", port=bind_port, reload=True)
