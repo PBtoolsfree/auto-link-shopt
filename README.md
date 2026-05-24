@@ -38,13 +38,25 @@ A premium, fully-automated deal-forwarding system designed to watch a private Te
 
 ## 💻 Running the Application
 
-### Option A: Windows Local Launch
+### Option A: Pterodactyl Game/Bot Panel (Recommended for Container Hosting)
+The FastAPI dashboard includes dynamic port binding support, automatically reading `PORT` or `SERVER_PORT` environment variables. This makes it natively compatible with Pterodactyl:
+
+1. **Create Server:** On your Pterodactyl Admin area, click **Create New Server**. Select the **Python** Nest and a standard **Python 3.9/3.10/3.11** Egg.
+2. **Assign Allocation:** Assign an IP and port (e.g. `8000` or any available port). Uvicorn will automatically bind to this assigned port inside the container.
+3. **Upload Files:** Upload your workspace files (excluding `.venv` and logs) to the server's File Manager. Rename `.env.example` to `.env` and fill in your credentials.
+4. **Set Startup Command:**
+   ```bash
+   pip install -r requirements.txt && python web_dashboard.py
+   ```
+5. **Launch:** Click **Start** in the server console. Access the control panel in your browser at `http://<node_ip>:<assigned_port>`.
+
+### Option B: Windows Local Launch
 1. Open the project folder in your terminal or File Explorer.
 2. Double-click the [start.bat](file:///C:/Users/PRADIP/.gemini/antigravity-ide/scratch/gplinks-affiliate-bot/start.bat) file (it will automatically create virtual environment `.venv`, update pip dependencies, and start the local dashboard).
 3. Open your web browser and navigate to: `http://localhost:8000`
 4. Enter the default gateway portal secret password: `admin123`.
 
-### Option B: Oracle Cloud & Linux VPS Deployment (Recommended)
+### Option C: Oracle Cloud & Linux VPS Deployment
 We have built a premium, fully-automated installation script (`install.sh`) specifically designed for Oracle Cloud, AWS, or any Linux VPS. It takes care of packages, creates a systemd service, auto-generates a secure password, and displays your dashboard connection info.
 
 1. Clone your repository onto the VPS:
